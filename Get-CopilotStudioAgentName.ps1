@@ -10,7 +10,7 @@
 #>
 
 param(
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [string] $EntraAgentObjectId,
 
     [Parameter(Mandatory)]
@@ -49,7 +49,7 @@ function LogVerbose($msg) {
     }
 }
 
-function Ensure-Module {
+function Import-ModuleIfNeeded {
     param([Parameter(Mandatory)][string]$Name)
     
     if (-not (Get-Module -ListAvailable -Name $Name)) {
@@ -65,7 +65,7 @@ function Get-DataverseToken {
         [Parameter(Mandatory)][string]$EnvironmentUrl
     )
 
-    Ensure-Module -Name "MSAL.PS"
+    Import-ModuleIfNeeded -Name "MSAL.PS"
     $publicClientId = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
     $scope = "$EnvironmentUrl/.default"
 
@@ -99,7 +99,8 @@ function Invoke-DvGetPaged {
         }
         if ($resp.PSObject.Properties.Name -contains '@odata.nextLink') {
             $next = $resp.'@odata.nextLink'
-        } else {
+        }
+        else {
             $next = $null
         }
     }
@@ -117,20 +118,20 @@ function Get-BotTextAttributes {
     LogInfo "Reading bot table metadata..."
     $attrs = Invoke-DvGetPaged -AccessToken $AccessToken -Url $metaUrl
 
-    $textTypes = @("String","Memo")
+    $textTypes = @("String", "Memo")
     $textAttrs = $attrs | Where-Object { $textTypes -contains $_.AttributeType } | Select-Object -ExpandProperty LogicalName
 
     $blacklistExact = @(
-        "createdbyname","modifiedbyname","owningusername","owningteamname",
-        "createdonbehalfbyname","modifiedonbehalfbyname"
+        "createdbyname", "modifiedbyname", "owningusername", "owningteamname",
+        "createdonbehalfbyname", "modifiedonbehalfbyname"
     )
 
     $filteredAttrs = $textAttrs | Where-Object {
         ($_ -notin $blacklistExact) -and
-        ($_ -notmatch 'name$' -or $_ -in @("name","schemaname"))
+        ($_ -notmatch 'name$' -or $_ -in @("name", "schemaname"))
     }
 
-    $mandatory = @("botid","name","schemaname")
+    $mandatory = @("botid", "name", "schemaname")
     $allAttrs = New-Object System.Collections.ArrayList
     
     foreach ($m in $mandatory) { [void]$allAttrs.Add($m) }
@@ -207,18 +208,19 @@ foreach ($bot in $bots) {
                 
                 if ($VerboseLogging -and $text.Length -le 500) {
                     LogVerbose "  Field content: $text"
-                } elseif ($VerboseLogging) {
+                }
+                elseif ($VerboseLogging) {
                     LogVerbose "  Field content (first 500 chars): $($text.Substring(0, 500))..."
                 }
                 
                 $botId = if ($bot.PSObject.Properties.Name -contains "botid") { $bot.botid } else { "<missing>" }
                 
                 [void]$found.Add([pscustomobject]@{
-                    AgentName  = $botName
-                    SchemaName = $schemaName
-                    BotId      = $botId
-                    FoundIn    = $field
-                })
+                        AgentName  = $botName
+                        SchemaName = $schemaName
+                        BotId      = $botId
+                        FoundIn    = $field
+                    })
                 break
             }
         }
@@ -237,7 +239,8 @@ if ($found.Count -eq 0) {
     LogInfo "1. Verify the Entra Agent ID is correct in Copilot Studio Settings > Advanced"
     LogInfo "2. The GUID might be stored in a non-text field (e.g., Lookup, GUID type)"
     LogInfo "3. Try searching in the Copilot Studio portal directly"
-} else {
+}
+else {
     LogInfo ""
     LogInfo "================================"
     LogInfo "MATCH(ES) FOUND"

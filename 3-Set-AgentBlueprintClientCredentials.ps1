@@ -1,4 +1,4 @@
-Connect-MgGraph -Scopes "AgentIdentityBlueprint.AddRemoveCreds.All"
+Connect-MgGraph -Scopes "AgentIdentityBlueprint.Create"
 
 $applicationId = "<agent-blueprint-app-id>"
 
