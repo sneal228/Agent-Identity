@@ -19,3 +19,4 @@ The template variable {project-root} refers to the workspace/project root direct
 5. PRESENT the numbered menu
 6. WAIT for user input before proceeding
 </agent-activation>
+
